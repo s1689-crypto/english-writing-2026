@@ -58,17 +58,17 @@ except Exception:
     st.error("APIキーをSecretsに設定してください。")
     st.stop()
 
-# --- 🤖 モデル設定：Gemini 2.5 Pro を直接指定 ---
+# --- 🤖 モデル設定：Gemini 2.0 Flash を直接指定 ---
 try:
     # 2.5 Pro を使用
-    model = genai.GenerativeModel('gemini-2.5-pro')
+    model = genai.GenerativeModel('gemini-2.0-flash')
 except Exception as e:
     st.error(f"モデルの起動に失敗しました: {e}")
     st.stop()
 
 # --- メイン処理 ---
 st.title("🎓 AI English Teacher")
-st.caption("🚀 使用モデル: Gemini 2.5 Pro")
+st.caption("🚀 使用モデル: Gemini 2.0 Flash")
 
 # CSV読み込み
 csv_file = "data.csv"
@@ -108,7 +108,7 @@ else:
             if not student_answer.strip():
                 st.warning("入力してください。")
             else:
-                with st.spinner("Gemini 2.5 Pro が精緻に採点中..."):
+                with st.spinner("Gemini 2.0 Flash が精緻に採点中..."):
                     prompt = f"""
                     あなたはプロの英語教師です。以下の基準で採点・添削してください。
                     お題: {topic}, 配点: {points}, 語数: {word_limit}, 条件: {', '.join(conds)}

@@ -134,7 +134,7 @@ else:
                 # ★ここが最強の修正ポイント！利用可能なモデルを強制的に探します★
                 valid_model = None
                 try:
-                    # 1. まず最新のFlashを指定してみる
+                    # 1. まず最新のProを指定してみる
                     model = genai.GenerativeModel('gemini-2.5-Pro')
                     # 2. 試し打ちをして確認する（ここでエラーが出たら次へ行く）
                     model.generate_content("test")

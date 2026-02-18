@@ -134,26 +134,14 @@ else:
                 # ★ここが最強の修正ポイント！利用可能なモデルを強制的に探します★
                 valid_model = None
                 try:
-                    # 1. 
-                    model = genai.GenerativeModel('gemini-2.5-Pro')
-                    # 2. 試し打ちをして確認する（ここでエラーが出たら次へ行く）
-                    model.generate_content("test")
-                    valid_model = model
-                    model_name = "Gemini 2.5 Pro"
-                except:
-                    try:
-                        # 3. ダメならProを試す
-                        model = genai.GenerativeModel('gemini-pro')
-                        model.generate_content("test")
-                        valid_model = model
-                        model_name = "Gemini Pro"
-                    except:
-                        # 4. それでもダメなら「使えるリスト」の最初を使う（最終手段）
-                        for m in genai.list_models():
-                            if 'generateContent' in m.supported_generation_methods:
-                                valid_model = genai.GenerativeModel(m.name)
-                                model_name = m.name
-                                break
+    # 強制的に Gemini 2.0 Flash を指定
+    model = genai.GenerativeModel('gemini-2.0-flash')
+    # 動作確認のためのテスト（これを通れば2.0が有効）
+    model.generate_content("test")
+except Exception:
+    # もし2.0が使えない環境（ライブラリが古い等）なら、
+    # 以前の 1.5 Flash を試す
+    model = genai.GenerativeModel('gemini-1.5-flash')
                 
                 if not valid_model:
                     st.error("⚠️ AIモデルが利用できませんでした。時間をおいて再試行してください。")

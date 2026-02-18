@@ -39,14 +39,14 @@ st.markdown(f"""
     .question-box {{
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 25px 20px; /* パディングを少し広げて見やすく */
+        padding: 25px 20px;
         border-radius: 12px;
         margin: 20px 0;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         text-align: center;
     }}
     .question-text {{
-        font-size: 1.6rem; /* 文字を少し大きく */
+        font-size: 1.6rem;
         font-weight: bold;
         line-height: 1.4;
     }}
@@ -68,7 +68,7 @@ st.markdown(f"""
         color: white;
     }}
     
-    /* テキストエリアの調整（上部が切れないようにマージン設定を削除しました） */
+    /* テキストエリアの調整 */
     .stTextArea textarea {{
         font-size: 16px;
         line-height: 1.5;
@@ -84,14 +84,8 @@ try:
         api_key = st.secrets["general"]["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
 except Exception as e:
-    st.error("APIキーの設定エラーです。secrets.tomlを確認してください。")
+    st.error("APIキーの設定エラーです。Streamlit CloudのSecrets設定を確認してください。")
     st.stop()
-
-# --- モデル設定 ---
-try:
-    model = genai.GenerativeModel('gemini-1.5-flash-001')
-except Exception:
-    model = genai.GenerativeModel('gemini-pro')
 
 # --- メイン処理 ---
 st.title("🎓 AI English Teacher")
@@ -125,7 +119,6 @@ else:
         
         points = row.get('配点', 10)
         
-        # ★修正: 語数指定が空なら「なし」にする
         word_limit = row.get('語数指定', '')
         if not word_limit:
             word_limit = "なし"
@@ -134,7 +127,7 @@ else:
         conds = [c for c in conds if c] # 空文字を除外
         criteria = row.get('評価規準', '')
 
-        # ★修正: Today's Topicを削除し、お題だけを表示
+        # お題表示
         st.markdown(f"""
         <div class="question-box">
             <div class="question-text">{topic}</div>
@@ -143,10 +136,8 @@ else:
 
         # 条件表示
         with st.container():
-            # 条件を1行のテキストで結合
             cond_text = " / ".join(conds) if conds else "特になし"
             
-            # メトリクス風に表示
             m1, m2, m3 = st.columns([1, 1, 2.5])
             with m1:
                 st.info(f"💯 **配点**\n\n{points}点")
@@ -156,7 +147,6 @@ else:
                 st.warning(f"✅ **必須条件**\n\n{cond_text}")
 
         # 回答入力フォーム
-        # ★修正: label_visibility="visible" に戻し（デフォルト）、見やすくしました
         student_answer = st.text_area("Answer", height=200, placeholder="ここに英語で回答を書いてください...")
         
         # 採点ボタン
@@ -164,7 +154,19 @@ else:
             if not student_answer.strip():
                 st.warning("回答が入力されていません。")
             else:
-                with st.spinner("AI先生が採点中... ☕"):
+                # ★ここが修正ポイント！モデルを使い分ける魔法のコード★
+                model_name = ""
+                try:
+                    # まず最新のFlashモデルを試す
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content("test") # 試し打ち
+                    model_name = "Gemini 1.5 Flash"
+                except:
+                    # ダメなら安定版のProを使う（エラーを出さない！）
+                    model = genai.GenerativeModel('gemini-pro')
+                    model_name = "Gemini Pro"
+
+                with st.spinner(f"AI先生 ({model_name}) が採点中... ☕"):
                     prompt = f"""
                     あなたは親切で熱心な英語教師です。
                     生徒のモチベーションが上がるように、絵文字を使いながら丁寧に採点してください。
